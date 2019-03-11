@@ -20,7 +20,7 @@ public class LayerMgr //: MonoBehaviour
         }
     }
 
-    public Transform transform;
+    public Transform transform { get; set; }
     public int curEditLayer = 1;
     //当前有的总层数
     public int curLayerCount = 0;

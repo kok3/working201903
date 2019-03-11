@@ -450,7 +450,10 @@ namespace MapEditor
                 this.UpdateWithDelete();
             }
         }
-        public GameObject CurrentSelectObject = null;// current select gameobject
+        public GameObject CurrentSelectObject
+        { set { EditorSelection.activeGameObject = CurrentSelectObject; }
+          get { return EditorSelection.activeGameObject; }
+        }
         private MapObjectWeaponSpawnPoint CurrentSelectWeapon = null; // if current select is weapon spaen point  , use to update  UIPanelUp 's view ui
         Vector3 _position_delta;
     }
