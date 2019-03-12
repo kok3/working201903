@@ -12,7 +12,6 @@ namespace MapEditor
     {
         public void Awake()
         {
-            Debug.LogError("111111111111111111111111111111111111111111 EditorSerializeObjectsRoot.Awake set transform");
             LayerMgr.ins.transform = transform;
         }
         //scene-->map

@@ -18,7 +18,7 @@ namespace MapEditor
 
         private void Start()
         {
-            GameObject go = RuntimeSelection.activeGameObject;
+            GameObject go = EditorSelection.activeGameObject;
             ExposeToEditor exposeToEditor = go.GetComponent<ExposeToEditor>();
             HierarchyItem hierarchyItem = go.GetComponent<HierarchyItem>();
             HashSet<Component> ignoreComponents = new HashSet<Component>();
@@ -107,13 +107,13 @@ namespace MapEditor
 
         private void OnEnableDisable(bool enable)
         {
-            GameObject go = RuntimeSelection.activeGameObject;
+            GameObject go = EditorSelection.activeGameObject;
             go.SetActive(enable);
         }
 
         private void OnEndEditName(string name)
         {
-            GameObject go = RuntimeSelection.activeGameObject;
+            GameObject go = EditorSelection.activeGameObject;
             ExposeToEditor exposeToEditor = go.GetComponent<ExposeToEditor>();
             if(exposeToEditor != null)
             {

@@ -81,6 +81,8 @@ namespace MapEditor
             if (currentSelect != null)
             {
                 currentSelect.SetBright(true);
+
+                UIRoot.ins.touchBehaviour = TouchBehaviour.Added;
             }
         }
         public void ClearSelected()

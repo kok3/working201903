@@ -41,8 +41,10 @@ namespace MapEditor
 				{ typeof(UnityEngine.SphereCollider), new EditorDescriptor(18, true, false) },
 				{ typeof(UnityEngine.SpringJoint), new EditorDescriptor(17, true, false) },
 				{ typeof(UnityEngine.Transform), new EditorDescriptor(19, true, false) },
+                { typeof(Prefab40Property), new EditorDescriptor(17, true, false) },
+                { typeof(Prefab37Property), new EditorDescriptor(17, true, false) },
 
-			};
+            };
 		}
 	}
 }

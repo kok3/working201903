@@ -182,6 +182,7 @@ namespace MapEditor
                     // create one will cancel selected 
                     root._panel_up.ClearSelected();
                     root._panel_left.ClearSelected();
+
                     return;
                 }
                 else
@@ -202,6 +203,8 @@ namespace MapEditor
             {
                 MapObjectRoot.ins.DestroyObjectImmediate(CurrentSelectObject);
                 CurrentSelectObject = null;
+
+                root.touchBehaviour = TouchBehaviour.Select;
                 return;
             }
             if (CurrentSelectObject != null)
@@ -439,6 +442,64 @@ namespace MapEditor
             }
             CurrentSelectObject = null;
         }
+
+        void UpdateWithSelected()
+        {
+            if (this.GetTouchDown() && !IsTouchUI._IsTouchUI)
+            {
+                var ray = Camera.main.ScreenPointToRay(this.GetTouchPosition());
+#if UNITY_EDITOR
+                Debug.DrawLine(ray.origin, ray.GetPoint(100f), Color.red, 10f);
+#endif
+                RaycastHit hit;
+                if (Physics.Raycast(ray, out hit, 1000f, mask))
+                {
+                    var obj = hit.collider.gameObject.GetComponentFully<MapObjectBase>();
+                    if (obj != null)
+                    {
+                        CurrentSelectObject = obj.gameObject;
+                        var type = CurrentSelectObject.GetComponent<MapObjectBase>();
+                        if ((type as MapObjectSpawnPoint == null) && (type as MapObjectWeaponSpawnPoint == null))
+                        {
+                            EditorSelection.activeObject = CurrentSelectObject;
+                        }
+                        else
+                        {
+                            CurrentSelectObject = null;
+                            EditorSelection.activeObject = null;
+                        }
+                    }
+                    else
+                    {
+                        CurrentSelectObject = null;
+                        EditorSelection.activeObject = null;
+                    }
+                }
+                else
+                {
+                    CurrentSelectObject = null;
+                    EditorSelection.activeObject = null;
+                }
+            }
+
+            //if (CurrentSelectObject != null)
+            //{
+            //    var type = CurrentSelectObject.GetComponent<MapObjectBase>();
+            //    if ((type as MapObjectSpawnPoint == null) && (type as MapObjectWeaponSpawnPoint == null))
+            //    {
+            //        //选择
+            //        Debug.Log("@@@@@@@@@@@@@@@@@@@@  Selected Object!");
+            //        EditorSelection.activeObject = CurrentSelectObject;
+            //    }
+
+            //}
+            //else
+            //{
+            //    EditorSelection.activeObject = null;
+            //}
+
+        }
+
         void Update()
         {
             if (root.touchBehaviour == TouchBehaviour.Added)
@@ -449,11 +510,15 @@ namespace MapEditor
             {
                 this.UpdateWithDelete();
             }
+            else if (root.touchBehaviour == TouchBehaviour.Select)
+            {
+                this.UpdateWithSelected();
+            }
         }
-        public GameObject CurrentSelectObject
-        { set { EditorSelection.activeGameObject = CurrentSelectObject; }
-          get { return EditorSelection.activeGameObject; }
-        }
+        public GameObject CurrentSelectObject = null;
+        //{ set { EditorSelection.activeGameObject = CurrentSelectObject; }
+        //  get { return EditorSelection.activeGameObject; }
+        //}
         private MapObjectWeaponSpawnPoint CurrentSelectWeapon = null; // if current select is weapon spaen point  , use to update  UIPanelUp 's view ui
         Vector3 _position_delta;
     }

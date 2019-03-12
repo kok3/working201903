@@ -5,7 +5,7 @@ namespace MapEditor
     public class EditorsMapStorage : MonoBehaviour
     {
         public const string EditorsMapPrefabName = "MapEditorsMap";
-        [HideInInspector]
+        //[HideInInspector]
         public GameObject[] Editors;
 
         [HideInInspector]

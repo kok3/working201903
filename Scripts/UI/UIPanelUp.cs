@@ -157,6 +157,8 @@ namespace MapEditor
             img_selected.transform.SetParent( currentSelect.transform,true);
             img_selected.transform.localPosition = Vector3.zero;
 
+            UIRoot.ins.touchBehaviour = TouchBehaviour.Added;
+
             //  img_selected.transform.position = currentSelect.transform.position;
         }
         public void OnCellWeaponClick(OneMapObjectWeapon who)

@@ -13,6 +13,7 @@ namespace MapEditor
     {
         Added,//添加物件
         Deleted, // 移除物件
+        Select, // 选择物件
     }
     public enum MapEditorStep
     {
@@ -218,6 +219,10 @@ namespace MapEditor
                 touchBehaviour = TouchBehaviour.Deleted;
             }
             else if (touchBehaviour == TouchBehaviour.Deleted)
+            {
+                touchBehaviour = TouchBehaviour.Added;
+            }
+            else if (touchBehaviour == TouchBehaviour.Select)
             {
                 touchBehaviour = TouchBehaviour.Added;
             }

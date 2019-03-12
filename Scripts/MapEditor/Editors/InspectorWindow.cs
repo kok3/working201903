@@ -24,10 +24,10 @@ namespace MapEditor
             {
                 Debug.LogError("GameObjectEditor is not set");
             }
-            if (MaterialEditor == null)
-            {
-                Debug.LogError("MaterialEditor is not set");
-            }
+            //if (MaterialEditor == null)
+            //{
+            //    Debug.LogError("MaterialEditor is not set");
+            //}
             EditorSelection.SelectionChanged += OnRuntimeSelectionChanged;
         }
 

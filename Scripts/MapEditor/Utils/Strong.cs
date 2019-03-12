@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using System;
 using System.Linq;
 
-namespace MapEditor.Utils
+namespace MapEditor.RefletionUtils
 {
     public class Strong
     {
