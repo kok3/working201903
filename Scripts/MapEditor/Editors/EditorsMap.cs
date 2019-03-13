@@ -105,6 +105,7 @@ namespace MapEditor
             {
                 return descriptor.Enabled;
             }
+
             return false;
         }
 
@@ -168,6 +169,10 @@ namespace MapEditor
 
         private static EditorDescriptor GetEditorDescriptor(Type type, bool isPropertyEditor, bool strict)
         {
+            if (type.BaseType == typeof(CustomerPropertyBase))
+            {
+                strict = false;
+            }
             do
             {
                 EditorDescriptor descriptor;
@@ -189,6 +194,7 @@ namespace MapEditor
                     }
                 }
 
+               
                 if (strict)
                 {
                     break;

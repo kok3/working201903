@@ -20,7 +20,8 @@ namespace MapEditor
 				{ typeof(System.Int32), new EditorDescriptor(8, true, true) },
 				{ typeof(System.Single), new EditorDescriptor(9, true, true) },
 				{ typeof(UnityEngine.Vector2), new EditorDescriptor(11, true, true) },
-				{ typeof(UnityEngine.Vector3), new EditorDescriptor(12, true, true) },
+                { typeof(Serializable.Vector3), new EditorDescriptor(20, true, true) },
+                { typeof(UnityEngine.Vector3), new EditorDescriptor(12, true, true) },
 				{ typeof(UnityEngine.Vector4), new EditorDescriptor(13, true, true) },
 				{ typeof(UnityEngine.Quaternion), new EditorDescriptor(14, true, true) },
 				{ typeof(UnityEngine.Color), new EditorDescriptor(15, true, true) },
@@ -41,8 +42,7 @@ namespace MapEditor
 				{ typeof(UnityEngine.SphereCollider), new EditorDescriptor(18, true, false) },
 				{ typeof(UnityEngine.SpringJoint), new EditorDescriptor(17, true, false) },
 				{ typeof(UnityEngine.Transform), new EditorDescriptor(19, true, false) },
-                { typeof(Prefab40Property), new EditorDescriptor(17, true, false) },
-                { typeof(Prefab37Property), new EditorDescriptor(17, true, false) },
+                { typeof(CustomerPropertyBase), new EditorDescriptor(17, true, false) },
 
             };
 		}
