@@ -50,6 +50,7 @@ namespace MapEditor
             InputName.onEndEdit.AddListener(OnEndEditName);
             TogEnableDisable.onValueChanged.AddListener(OnEnableDisable);
             Component[] components = go.GetComponents<Component>();
+            //Component[] components = go.GetComponentsInChildren<Collider>();
             for (int i = 0; i < components.Length; ++i)
             {
                 Component component = components[i];

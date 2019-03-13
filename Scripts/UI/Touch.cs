@@ -14,6 +14,11 @@ namespace MapEditor
         UIRoot root;
         UIPanelUp _panel_up;
 
+        private bool isTouchDown = false;
+        private Bounds boundingBox;
+
+        const int MAX_NUM = 9999;
+
         void Awake()
         {
             root = this.GetComponent<UIRoot>();
@@ -127,8 +132,6 @@ namespace MapEditor
                     // not hit some thind  -   if select  then added
                     if (_panel_up.currentSelect != null)
                     {
-                        const int MAX_NUM = 9999;
-
                         if (MapObjectRoot.ins.TotalMapObjectCount > MAX_NUM)
                         {
                             if (UICommonDialog.ins != null)
@@ -146,6 +149,8 @@ namespace MapEditor
                                 //      Debug.LogError(pos);
                                 obj.transform.position = pos;
                                 CurrentSelectObject = obj;
+                                //计算包围盒
+                                boundingBox = CurrentSelectObject.CalculateBounds();
                                 _position_delta = Vector3.zero;
                                 // create one will cancel selected 
                                 root._panel_up.ClearSelected();
@@ -236,6 +241,49 @@ namespace MapEditor
                 //   CurrentSelectObject = null;
 
             }
+
+            
+            //拖动连续生成
+            if (isTouchDown && !IsTouchUI._IsTouchUI)
+            {
+                if (CurrentSelectObject != null)
+                {
+                    
+                    if (MapObjectRoot.ins.TotalMapObjectCount > MAX_NUM)
+                    {
+                        if (UICommonDialog.ins != null)
+                        {
+                            UICommonDialog.ins.ShowOK("数量达到上限");
+                        }
+                    }
+                    else
+                    {
+
+                        var obj = MapObjectRoot.ins.CreateObject(CurrentSelectObject.name, LayerMgr.ins.GetCurLayerTransform());
+                        var pos = Camera.main.ScreenToWorldPoint(this.GetTouchPosition());
+                        pos.x = 0f;
+                        if (boundingBox != null)
+                        {
+                            //离上个物体足够距离了
+                            if ((Mathf.Abs(boundingBox.center.y-pos.y) >= boundingBox.size.y) || (Mathf.Abs(boundingBox.center.z - pos.z) >= boundingBox.size.z))
+                            {
+                                obj.transform.position = pos;
+
+                                CurrentSelectObject = obj;
+                                boundingBox.center = pos;
+
+                                return;
+                            }
+                        }
+                        
+
+
+                        
+                    }
+                }
+            }
+
+
         }
 #else
         void UpdateWithAdded()
@@ -301,12 +349,12 @@ namespace MapEditor
                     if (_panel_up.currentSelect != null)
                     {
 #if UNITY_EDITOR
-                        const int MAX_NUM = 9999;
+                        if (MapObjectRoot.ins.TotalMapObjectCount > MAX_NUM)
 #else
                         //#1000170  改为不限制碰撞和增加物件上限为50
-                          int MAX_NUM = DevConfig.MapEditorMaxAllowMapObjectNumber;
+                        if (MapObjectRoot.ins.TotalMapObjectCount > DevConfig.MapEditorMaxAllowMapObjectNumber)
 #endif
-                        if (MapObjectRoot.ins.TotalMapObjectCount > MAX_NUM)
+
                         {
                             if (UICommonDialog.ins != null)
                             {
@@ -323,6 +371,7 @@ namespace MapEditor
                                 //      Debug.LogError(pos);
                                 obj.transform.position = pos;
                                 CurrentSelectObject = obj;
+                                boundingBox = obj.CalculateBounds();
                                 _position_delta = Vector3.zero;
                                 // create one will cancel selected 
                                 root._panel_up.ClearSelected();
@@ -370,6 +419,43 @@ namespace MapEditor
                 {
                     //   MapObjectRoot.ins.CheckAllConflict();
                     CurrentSelectObject.transform.hasChanged = false;
+                }
+            }
+
+            //拖动连续生成
+            UnityEngine.Touch th = Input.GetTouch(0);
+            if ((th.phase == TouchPhase.Moved) && !IsTouchUI._IsTouchUI)
+            {
+                if (CurrentSelectObject != null)
+                {
+
+                    if (MapObjectRoot.ins.TotalMapObjectCount > MAX_NUM)
+                    {
+                        if (UICommonDialog.ins != null)
+                        {
+                            UICommonDialog.ins.ShowOK("数量达到上限");
+                        }
+                    }
+                    else
+                    {
+                        var obj = MapObjectRoot.ins.CreateObject(CurrentSelectObject.name, LayerMgr.ins.GetCurLayerTransform());
+                        var pos = Camera.main.ScreenToWorldPoint(this.GetTouchPosition());
+                        pos.x = 0f;
+                        if (boundingBox != null)
+                        {
+                            //离上个物体足够距离了
+                            if ((Mathf.Abs(boundingBox.center.y - pos.y) >= boundingBox.size.y) || (Mathf.Abs(boundingBox.center.z - pos.z) >= boundingBox.size.z))
+                            {
+                                obj.transform.position = pos;
+
+                                CurrentSelectObject = obj;
+                                boundingBox.center = pos;
+
+                                return;
+                            }
+                        }
+
+                    }
                 }
             }
         }
@@ -481,27 +567,42 @@ namespace MapEditor
                     EditorSelection.activeObject = null;
                 }
             }
+        }
 
-            //if (CurrentSelectObject != null)
-            //{
-            //    var type = CurrentSelectObject.GetComponent<MapObjectBase>();
-            //    if ((type as MapObjectSpawnPoint == null) && (type as MapObjectWeaponSpawnPoint == null))
-            //    {
-            //        //选择
-            //        Debug.Log("@@@@@@@@@@@@@@@@@@@@  Selected Object!");
-            //        EditorSelection.activeObject = CurrentSelectObject;
-            //    }
+        bool IsTouchPositionHasObject()
+        {
+            var ray = Camera.main.ScreenPointToRay(this.GetTouchPosition());
+#if UNITY_EDITOR
+            Debug.DrawLine(ray.origin, ray.GetPoint(100f), Color.red, 10f);
+#endif
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, 1000f, mask))
+            {
+                var obj = hit.collider.gameObject.GetComponentFully<MapObjectBase>();
+                if (obj != null)
+                {
+                    return true;
+                }
+            }
 
-            //}
-            //else
-            //{
-            //    EditorSelection.activeObject = null;
-            //}
-
+            return false;
         }
 
         void Update()
         {
+    #if (UNITY_ANDROID || UNITY_IOS || UNITY_IPHONE) && !UNITY_EDITOR
+
+    #else
+            if (Input.GetMouseButtonDown(0))
+            {
+                isTouchDown = true;
+            }
+            if (Input.GetMouseButtonUp(0))
+            {
+                isTouchDown = false;
+            }
+    #endif
+
             if (root.touchBehaviour == TouchBehaviour.Added)
             {
                 this.UpdateWithAdded();
