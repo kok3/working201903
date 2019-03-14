@@ -92,7 +92,6 @@ namespace MapEditor
         //map-->scene
         public override bool DeSerializeObject(Serializable.Map map)
         {
-            Debug.LogError("2222222222222222222222222222222222 DeSerializeObject set transform");
             LayerMgr.ins.transform = transform;
             LayerMgr.ins.Clear();
             //Transform[] layers = new Transform[LayerMgr.MAX_LAYER_COUNT];

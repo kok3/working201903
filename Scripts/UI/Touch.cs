@@ -548,23 +548,27 @@ namespace MapEditor
                         if ((type as MapObjectSpawnPoint == null) && (type as MapObjectWeaponSpawnPoint == null))
                         {
                             EditorSelection.activeObject = CurrentSelectObject;
+                            UIPanelOperation.ins.InitData(CurrentSelectObject.transform);
                         }
                         else
                         {
                             CurrentSelectObject = null;
                             EditorSelection.activeObject = null;
+                            UIPanelOperation.ins.Hide();
                         }
                     }
                     else
                     {
                         CurrentSelectObject = null;
                         EditorSelection.activeObject = null;
+                        UIPanelOperation.ins.Hide();
                     }
                 }
                 else
                 {
                     CurrentSelectObject = null;
                     EditorSelection.activeObject = null;
+                    UIPanelOperation.ins.Hide();
                 }
             }
         }
