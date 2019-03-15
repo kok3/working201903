@@ -27,13 +27,18 @@ namespace MapEditor
 
         //目标
         private Transform targetTs;
+        
+        
 
         private float rotatedAngle = 0f;
 
         //当前缩放
-        private Vector3 scale = Vector3.one;
+        //private Vector3 scale = Vector3.one;
         //当前旋转
-        private Vector3 rotate = Vector3.zero;
+        private Vector3 originRotate = Vector3.zero;
+        //
+        private Vector3 originPos = Vector3.zero;
+
 
         private Vector3 originScale = Vector3.one;
 
@@ -60,10 +65,16 @@ namespace MapEditor
             Show();
 
             Bounds objBoundingBox = ts.gameObject.CalculateBounds();
-            scale = ts.localScale;
-            rotate = ts.eulerAngles;
+            //rotate = ts.eulerAngles;
+
+            Debug.Log("111111111111111111111111 ts.eulerAngles: " + ts.eulerAngles);
+            Debug.Log("111111111111111111111111 ts.rotation.eulerAngles: " + ts.rotation.eulerAngles);
 
             targetTs = ts;
+
+            originScale = targetTs.localScale;
+            originRotate = targetTs.rotation.eulerAngles;
+            originPos = targetTs.position;
 
             boundBoxRatio = objBoundingBox.size.y / objBoundingBox.size.z;
             Debug.Log("@@@@@@@@@@@@@@  boundBoxRatio: " + boundBoxRatio);
@@ -81,12 +92,8 @@ namespace MapEditor
             Vector3 screenUpPos = Camera.main.WorldToScreenPoint(upPos);
             Vector3 screenDownPos = Camera.main.WorldToScreenPoint(downPos);
 
-            //UI才用Overlay,屏幕坐标就是UI的世界坐标
-            //Vector3 globalMousePos;
-            //if (RectTransformUtility.ScreenPointToWorldPointInRectangle(curRecTran, screenPos, Camera.main, out globalMousePos))
+            //UI用Overlay,屏幕坐标就是UI的世界坐标
             {
-                //Debug.Log("222222222222222222222222222222222222222: " + curRecTran.position);
-                //Debug.Log("eventData.position: " + screenPos);
                 curRecTran.position = new Vector3(screenPos.x, screenPos.y, 0);
 
                 childRecTrans[0].position = new Vector3(screenLeftPos.x, screenLeftPos.y, 0);
@@ -94,10 +101,16 @@ namespace MapEditor
                 childRecTrans[2].position = new Vector3(screenUpPos.x, screenUpPos.y, 0);
                 childRecTrans[3].position = new Vector3(screenDownPos.x, screenDownPos.y, 0);
 
-                for (int i = 0; i < 4; i++)
+                Vector3 center = (childRecTrans[0].position + childRecTrans[1].position) / 2;
+                //旋转
+                float angle = targetTs.rotation.eulerAngles.x;
+                for (int i = 0; i< 4; i++)
                 {
+                    childRecTrans[i].position = RotateRound(childRecTrans[i].position, center, new Vector3(0, 0, 1), angle);
+
                     childOriginPostions[i] = childRecTrans[i].position;
                 }
+                
             }
 
             pivotDis = Vector3.Distance(childRecTrans[0].position, childRecTrans[1].position);
@@ -107,6 +120,12 @@ namespace MapEditor
         //子控件开始拖动
         public void OnBeginChildDrag(int index)
         {
+            //InitData(targetTs);
+
+            originScale = targetTs.localScale;
+            originRotate = targetTs.rotation.eulerAngles;
+            originPos = targetTs.position;
+
             childObjs[2].SetActive(false);
             childObjs[3].SetActive(false);
 
@@ -123,15 +142,22 @@ namespace MapEditor
 
             Vector3 originDir = Vector3.one;
             Vector3 newDir = Vector3.one;
+
+            Vector3 pivotPos = Vector3.one;
+
             if (index == 1)
             {
                 originDir = childOriginPostions[1] - childOriginPostions[0];
-                newDir = pos - childOriginPostions[0]; 
+                newDir = pos - childOriginPostions[0];
+
+                pivotPos = childOriginPostions[0];
             }
             else if (index == 0)
             {
                 originDir = childOriginPostions[0] - childOriginPostions[1];
                 newDir = pos - childOriginPostions[1];
+
+                pivotPos = childOriginPostions[1];
             }
 
             Quaternion qt = Quaternion.FromToRotation(originDir, newDir);
@@ -158,11 +184,21 @@ namespace MapEditor
             if (scale >= MaxScale)
                 scale = MaxScale;
 
-            targetTs.localScale = originScale * scale;         
+            targetTs.localScale = originScale * scale;
 
             //float angle = Mathf.Asin((childRecTrans[1].position.y - childRecTrans[0].position.y) / (childRecTrans[1].position.x - childRecTrans[0].position.x));
             //57.3= 180 /3.14
-            targetTs.rotation = Quaternion.Euler(rotatedAngle, 0, 0);
+            //targetTs.rotation = Quaternion.Euler(rotatedAngle, 0, 0);
+
+            //UI世界坐标转屏幕坐标 (Overlay模式 两种坐标一致)
+            Vector3 screenPos = new Vector3(pivotPos.x, pivotPos.y, 0);
+            //屏幕坐标转世界坐标
+            Vector3 worldPos = Camera.main.ScreenToWorldPoint(screenPos);
+            //worldPos.x = 0;
+            //这里的旋转是总的角度，旋转时要重置到旋转前的矩阵
+            targetTs.rotation = Quaternion.Euler(originRotate);
+            targetTs.position = originPos;
+            targetTs.RotateAround(worldPos, new Vector3(1, 0, 0), rotatedAngle);
         }
 
         //拖动结束，按需重置拖动点
@@ -190,104 +226,6 @@ namespace MapEditor
             Vector3 rotatedPos = RotateRound(childRecTrans[1].position, centerPos, new Vector3(0, 0, 1), 90);
             childRecTrans[2].position = centerPos + (rotatedPos - centerPos) * boundBoxRatio;
             childRecTrans[3].position = childRecTrans[0].position + childRecTrans[1].position - childRecTrans[2].position;
-
-            //Vector3 originDir = Vector3.one;
-            //Vector3 originDir2 = Vector3.one;
-            //if (index == 1)
-            //{
-                
-            //    originDir = childOriginPostions[1] - childOriginPostions[0];
-            //    originDir2 = childOriginPostions[2] - childOriginPostions[0];
-            //    float originAngle = Vector3.Angle(originDir, originDir2);
-            //    Vector3 cross = Vector3.Cross(originDir, originDir2);
-            //    //顺时针角度用负值
-            //    if (cross.z < 0)
-            //    {
-            //        originAngle = -originAngle;
-            //    }
-            //    // 3.14/180
-            //    float totalAngle = (originAngle + rotatedAngle) * 0.0174533f;
-
-            //    //缩放后
-            //    Vector3 tmpPos = childRecTrans[0].position + (childOriginPostions[2] - childRecTrans[0].position) * scale;
-            //    //旋转后
-            //    float tmpD = Vector3.Distance(tmpPos, childRecTrans[0].position);
-            //    childRecTrans[2].position = childRecTrans[0].position + new Vector3(tmpD * Mathf.Cos(totalAngle), tmpD * Mathf.Sin(totalAngle), 0);
-            //    childRecTrans[3].position = childRecTrans[0].position + childRecTrans[1].position - childRecTrans[2].position;
-
-            //    Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@@ childRecTrans[0].position: " + childRecTrans[0].position);
-            //}
-            //else if (index == 0)
-            //{
-            //    originDir = childOriginPostions[0] - childOriginPostions[1];
-            //    originDir2 = childOriginPostions[2] - childOriginPostions[1];
-            //    float originAngle = Vector3.Angle(originDir, originDir2);
-            //    Vector3 cross = Vector3.Cross(originDir, originDir2);
-            //    //顺时针角度用负值
-            //    if (cross.z < 0)
-            //    {
-            //        originAngle = -originAngle;
-            //    }
-            //    float totalAngle = (originAngle + rotatedAngle) * 0.0174533f;
-            //    //缩放后
-            //    Vector3 tmpPos = childRecTrans[1].position + (childOriginPostions[2] - childRecTrans[1].position) * scale;
-            //    //旋转后
-            //    float tmpD = Vector3.Distance(tmpPos, childRecTrans[1].position);
-            //    childRecTrans[2].position = childRecTrans[1].position + new Vector3(tmpD * Mathf.Cos(totalAngle), tmpD * Mathf.Sin(totalAngle), 0);
-            //    childRecTrans[3].position = childRecTrans[0].position + childRecTrans[1].position - childRecTrans[2].position;
-
-            //    Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@@ childRecTrans[1].position: " + childRecTrans[1].position);
-            //}
-
-            //float angle = Vector3.Angle(originDir, newDir);
-
-            //饶左边pivot旋转
-            //if (index == 1)
-            //{
-
-            //    float originAngle = Mathf.Atan2((childRecTrans[2].position.y - childRecTrans[0].position.y), (childRecTrans[2].position.x - childRecTrans[0].position.x));
-            //    float angle = Mathf.Atan2((childRecTrans[1].position.y - childRecTrans[0].position.y) , (childRecTrans[1].position.x - childRecTrans[0].position.x));
-            //    Debug.Log("before dis: " + Vector3.Distance(childRecTrans[2].position, childRecTrans[0].position));
-            //    //缩放后
-            //    Vector3 tmpPos = childRecTrans[0].position + (childRecTrans[2].position - childRecTrans[0].position) * scale;
-            //    //旋转后
-            //    float tmpD = Vector3.Distance(tmpPos, childRecTrans[0].position);
-
-            //    Debug.Log("111111111111111111111111111 angle: " + angle * 57.0f);
-            //    Debug.Log("Scale: " + scale);
-            //    Debug.Log("new Dis: " + tmpD);
-
-            //    Debug.Log("@@@@@ oldPosition: " + childRecTrans[2].position);
-
-            //    childRecTrans[2].position = childRecTrans[0].position + new Vector3(tmpD * Mathf.Cos(angle+originAngle), tmpD * Mathf.Sin(angle+originAngle), 0);
-
-            //    Debug.Log("@@@@@ newPosition: " + childRecTrans[2].position);
-
-            //    childRecTrans[3].position = childRecTrans[0].position + childRecTrans[1].position - childRecTrans[2].position;
-            //}
-            //else if (index == 0) //饶右边pivot旋转
-            //{
-            //    float originAngle = Mathf.Atan2((childRecTrans[2].position.y - childRecTrans[1].position.y), (childRecTrans[2].position.x - childRecTrans[1].position.x));
-            //    float angle = Mathf.Atan2((childRecTrans[0].position.y - childRecTrans[1].position.y) , (childRecTrans[0].position.x - childRecTrans[1].position.x));
-            //    //缩放后
-            //    Vector3 tmpPos = childRecTrans[1].position + (childRecTrans[2].position - childRecTrans[1].position) * scale;
-            //    //旋转后
-            //    float tmpD = Vector3.Distance(tmpPos, childRecTrans[1].position);
-            //    childRecTrans[2].position = childRecTrans[1].position + new Vector3(tmpD * Mathf.Cos(angle+originAngle), tmpD * Mathf.Sin(angle+originAngle), 0);
-            //    childRecTrans[3].position = childRecTrans[0].position + childRecTrans[1].position - childRecTrans[2].position;
-            //}
-
-
-            //Bounds bb = targetTs.gameObject.CalculateBounds();
-
-            //curRecTran.position = bb.center;
-
-            //Debug.Log("@@curRecTran.position: " + curRecTran.position);
-
-            //childRecTrans[0].position = new Vector3(curRecTran.position.x, curRecTran.position.y, curRecTran.position.z - bb.extents.z);
-            //childRecTrans[1].position = new Vector3(curRecTran.position.x, curRecTran.position.y, curRecTran.position.z + bb.extents.z);
-            //childRecTrans[2].position = new Vector3(curRecTran.position.x, curRecTran.position.y+bb.extents.y, curRecTran.position.z);
-            //childRecTrans[3].position = new Vector3(curRecTran.position.x, curRecTran.position.y-bb.extents.y, curRecTran.position.z);
 
             childObjs[2].SetActive(true);
             childObjs[3].SetActive(true);
