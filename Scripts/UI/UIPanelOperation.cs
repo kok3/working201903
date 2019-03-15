@@ -244,8 +244,15 @@ namespace MapEditor
             if (RectTransformUtility.ScreenPointToWorldPointInRectangle(curRecTran, eventData.position, eventData.pressEventCamera, out globalMousePos))
             {
                 curRecTran.position = globalMousePos;
-                Debug.Log("333333333333333333333  OnDrag globalMousePos: " + globalMousePos);
-                Debug.Log("eventData.position: " + eventData.position);
+
+                Vector3 screenPos = new Vector3(eventData.position.x, eventData.position.y, 0);
+                var pos = Camera.main.ScreenToWorldPoint(screenPos);
+                pos.x = 0f;
+
+                if (EditorSelection.activeGameObject != null)
+                {
+                    EditorSelection.activeGameObject.transform.position = pos;
+                }
             }
         }
 
