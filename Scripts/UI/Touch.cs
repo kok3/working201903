@@ -521,8 +521,40 @@ namespace MapEditor
                 CurrentSelectObject = null;
                 //cancle
                 //  root._panel_up.OnBtnDeleteClick();
+                return;
+
             }
             CurrentSelectObject = null;
+
+            //拖动连续生成
+            if (isTouchDown && !IsTouchUI._IsTouchUI)
+            {
+                var ray = Camera.main.ScreenPointToRay(this.GetTouchPosition());
+
+                RaycastHit hit;
+                if (Physics.Raycast(ray, out hit, 1000f, mask))
+                {
+                    var obj = hit.collider.gameObject.GetComponentFully<MapObjectBase>();
+                    if (obj != null)
+                    {
+                        CurrentSelectObject = obj.gameObject;
+                        if (CurrentSelectObject != null)
+                        {
+                            var type = CurrentSelectObject.GetComponent<MapObjectBase>();
+                            if ((type as MapObjectSpawnPoint == null) && (type as MapObjectWeaponSpawnPoint == null))
+                            {
+                                EditorRuntime.Delete(CurrentSelectObject);
+                            }
+                            MapObjectRoot.ins.CheckAllConflict();
+                            CurrentSelectObject = null;
+                            //cancle
+                            //  root._panel_up.OnBtnDeleteClick();
+                            return;
+
+                        }
+                    }
+                }
+            }
         }
 
         void UpdateWithSelected()
