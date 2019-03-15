@@ -19,7 +19,7 @@ namespace MapEditor
         //包围盒高宽比
         public float boundBoxRatio = 1.0f;
         public const float MaxScale = 4;
-        public const float Offset = 2.0f;
+        public const float Offset = 0.0f;
         private RectTransform curRecTran;
         public GameObject[] childObjs = new GameObject[4];
         private RectTransform[] childRecTrans = new RectTransform[4];
@@ -27,9 +27,7 @@ namespace MapEditor
 
         //目标
         private Transform targetTs;
-        
-        
-
+             
         private float rotatedAngle = 0f;
 
         //当前缩放
@@ -38,7 +36,6 @@ namespace MapEditor
         private Vector3 originRotate = Vector3.zero;
         //
         private Vector3 originPos = Vector3.zero;
-
 
         private Vector3 originScale = Vector3.one;
 
@@ -184,8 +181,6 @@ namespace MapEditor
             if (scale >= MaxScale)
                 scale = MaxScale;
 
-            targetTs.localScale = originScale * scale;
-
             //float angle = Mathf.Asin((childRecTrans[1].position.y - childRecTrans[0].position.y) / (childRecTrans[1].position.x - childRecTrans[0].position.x));
             //57.3= 180 /3.14
             //targetTs.rotation = Quaternion.Euler(rotatedAngle, 0, 0);
@@ -197,6 +192,7 @@ namespace MapEditor
             //worldPos.x = 0;
             //这里的旋转是总的角度，旋转时要重置到旋转前的矩阵
             targetTs.rotation = Quaternion.Euler(originRotate);
+            targetTs.localScale = originScale * scale;
             targetTs.position = originPos;
             targetTs.RotateAround(worldPos, new Vector3(1, 0, 0), rotatedAngle);
         }

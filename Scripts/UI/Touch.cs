@@ -143,6 +143,8 @@ namespace MapEditor
                         {
                             //   if (root.CurrentStep == MapEditorStep.MapObject)
                             {
+                                ///////////////////////////////////////////////
+                                //点击空地时创建
                                 var obj = MapObjectRoot.ins.CreateObject(_panel_up.currentSelect.id.ToString(), LayerMgr.ins.GetCurLayerTransform());
                                 var pos = Camera.main.ScreenToWorldPoint(this.GetTouchPosition());
                                 pos.x = 0f;
@@ -241,14 +243,12 @@ namespace MapEditor
                 //   CurrentSelectObject = null;
 
             }
-
-            
+           
             //拖动连续生成
             if (isTouchDown && !IsTouchUI._IsTouchUI)
             {
                 if (CurrentSelectObject != null)
-                {
-                    
+                {                   
                     if (MapObjectRoot.ins.TotalMapObjectCount > MAX_NUM)
                     {
                         if (UICommonDialog.ins != null)
@@ -257,9 +257,7 @@ namespace MapEditor
                         }
                     }
                     else
-                    {
-
-                        var obj = MapObjectRoot.ins.CreateObject(CurrentSelectObject.name, LayerMgr.ins.GetCurLayerTransform());
+                    {                      
                         var pos = Camera.main.ScreenToWorldPoint(this.GetTouchPosition());
                         pos.x = 0f;
                         if (boundingBox != null)
@@ -267,6 +265,7 @@ namespace MapEditor
                             //离上个物体足够距离了
                             if ((Mathf.Abs(boundingBox.center.y-pos.y) >= boundingBox.size.y) || (Mathf.Abs(boundingBox.center.z - pos.z) >= boundingBox.size.z))
                             {
+                                var obj = MapObjectRoot.ins.CreateObject(CurrentSelectObject.name, LayerMgr.ins.GetCurLayerTransform());
                                 obj.transform.position = pos;
 
                                 CurrentSelectObject = obj;
@@ -275,10 +274,7 @@ namespace MapEditor
                                 return;
                             }
                         }
-                        
-
-
-                        
+                                              
                     }
                 }
             }
@@ -438,7 +434,6 @@ namespace MapEditor
                     }
                     else
                     {
-                        var obj = MapObjectRoot.ins.CreateObject(CurrentSelectObject.name, LayerMgr.ins.GetCurLayerTransform());
                         var pos = Camera.main.ScreenToWorldPoint(this.GetTouchPosition());
                         pos.x = 0f;
                         if (boundingBox != null)
@@ -446,6 +441,7 @@ namespace MapEditor
                             //离上个物体足够距离了
                             if ((Mathf.Abs(boundingBox.center.y - pos.y) >= boundingBox.size.y) || (Mathf.Abs(boundingBox.center.z - pos.z) >= boundingBox.size.z))
                             {
+                                var obj = MapObjectRoot.ins.CreateObject(CurrentSelectObject.name, LayerMgr.ins.GetCurLayerTransform());
                                 obj.transform.position = pos;
 
                                 CurrentSelectObject = obj;
@@ -547,12 +543,14 @@ namespace MapEditor
                         var type = CurrentSelectObject.GetComponent<MapObjectBase>();
                         if ((type as MapObjectSpawnPoint == null) && (type as MapObjectWeaponSpawnPoint == null))
                         {
-                            EditorSelection.activeObject = CurrentSelectObject;
+                            UIPanelProperty.ins.Show();
+                            EditorSelection.activeObject = CurrentSelectObject;                            
                             UIPanelOperation.ins.InitData(CurrentSelectObject.transform);
                         }
                         else
                         {
                             CurrentSelectObject = null;
+                            UIPanelProperty.ins.Hide();
                             EditorSelection.activeObject = null;
                             UIPanelOperation.ins.Hide();
                         }
@@ -560,6 +558,7 @@ namespace MapEditor
                     else
                     {
                         CurrentSelectObject = null;
+                        UIPanelProperty.ins.Hide();
                         EditorSelection.activeObject = null;
                         UIPanelOperation.ins.Hide();
                     }
@@ -567,6 +566,7 @@ namespace MapEditor
                 else
                 {
                     CurrentSelectObject = null;
+                    UIPanelProperty.ins.Hide();
                     EditorSelection.activeObject = null;
                     UIPanelOperation.ins.Hide();
                 }

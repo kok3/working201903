@@ -250,10 +250,6 @@ namespace MapEditor
         }
         public GameObject CreateObject(string name, Transform parent = null)
         {
-            if (parent == null)
-            {
-                Debug.Log("11111111111");
-            }
             Transform p = transform;
             if (parent != null)
                 p = parent;
