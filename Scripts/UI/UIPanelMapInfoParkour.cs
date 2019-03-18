@@ -29,7 +29,17 @@ public class UIPanelMapInfoParkour : MonoBehaviour
     {
 
 #if !UNITY_EDITOR
-        GameObject.DestroyImmediate(_panel);
+        //in editor
+        if (MapEditor.MapEditorConfig.CurrentMapGameMode == MapGameMode.Normal)
+        {
+            GameObject.DestroyImmediate(_panel);
+        }
+        else if (MapEditor.MapEditorConfig.CurrentMapGameMode == MapGameMode.Parkour)
+        {
+            main_camera = Camera.main;
+            obj_MapEdge = GameObject.Find("MapEdge").gameObject;
+            background = GameObject.FindObjectOfType<BackGround>();
+        }
 #else
         //in editor
         if (MapEditor.MapEditorConfig.CurrentMapGameMode == MapGameMode.Normal)
