@@ -438,41 +438,45 @@ namespace MapEditor
             }
 
             //拖动连续生成
-            UnityEngine.Touch th = Input.GetTouch(0);
-            if ((th.phase == TouchPhase.Moved) && !IsTouchUI._IsTouchUI)
+            if (Input.touchCount > 0)
             {
-                if (CurrentSelectObject != null)
+                UnityEngine.Touch th = Input.GetTouch(0);
+                if ((th.phase == TouchPhase.Moved) && !IsTouchUI._IsTouchUI)
                 {
+                    if (CurrentSelectObject != null)
+                    {
 
-                    if (MapObjectRoot.ins.TotalMapObjectCount > MAX_NUM)
-                    {
-                        if (UICommonDialog.ins != null)
+                        if (MapObjectRoot.ins.TotalMapObjectCount > MAX_NUM)
                         {
-                            UICommonDialog.ins.ShowOK("数量达到上限");
-                        }
-                    }
-                    else
-                    {
-                        var pos = Camera.main.ScreenToWorldPoint(this.GetTouchPosition());
-                        pos.x = 0f;
-                        if (boundingBox != null)
-                        {
-                            //离上个物体足够距离了
-                            if ((Mathf.Abs(boundingBox.center.y - pos.y) >= boundingBox.size.y) || (Mathf.Abs(boundingBox.center.z - pos.z) >= boundingBox.size.z))
+                            if (UICommonDialog.ins != null)
                             {
-                                var obj = MapObjectRoot.ins.CreateObject(CurrentSelectObject.name, LayerMgr.ins.GetCurLayerTransform());
-                                obj.transform.position = pos;
-
-                                CurrentSelectObject = obj;
-                                boundingBox.center = pos;
-
-                                return;
+                                UICommonDialog.ins.ShowOK("数量达到上限");
                             }
                         }
+                        else
+                        {
+                            var pos = Camera.main.ScreenToWorldPoint(this.GetTouchPosition());
+                            pos.x = 0f;
+                            if (boundingBox != null)
+                            {
+                                //离上个物体足够距离了
+                                if ((Mathf.Abs(boundingBox.center.y - pos.y) >= boundingBox.size.y) || (Mathf.Abs(boundingBox.center.z - pos.z) >= boundingBox.size.z))
+                                {
+                                    var obj = MapObjectRoot.ins.CreateObject(CurrentSelectObject.name, LayerMgr.ins.GetCurLayerTransform());
+                                    obj.transform.position = pos;
 
+                                    CurrentSelectObject = obj;
+                                    boundingBox.center = pos;
+
+                                    return;
+                                }
+                            }
+
+                        }
                     }
                 }
             }
+
         }
 #endif
         Vector3 pos_begin_touch;
