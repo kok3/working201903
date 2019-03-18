@@ -158,6 +158,7 @@ namespace MapEditor
             img_selected.transform.localPosition = Vector3.zero;
 
             UIRoot.ins.touchBehaviour = TouchBehaviour.Added;
+            UIRoot.ins.SyncBtnDeleteStatus();
 
             //  img_selected.transform.position = currentSelect.transform.position;
         }

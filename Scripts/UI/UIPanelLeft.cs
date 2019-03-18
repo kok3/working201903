@@ -83,6 +83,7 @@ namespace MapEditor
                 currentSelect.SetBright(true);
 
                 UIRoot.ins.touchBehaviour = TouchBehaviour.Added;
+                UIRoot.ins.SyncBtnDeleteStatus();
             }
         }
         public void ClearSelected()

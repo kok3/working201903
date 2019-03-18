@@ -333,6 +333,16 @@ namespace MapEditor
                             }
                         }
                     }
+                    else if (CurrentSelectObject != null)//点中的是之前的物件(直接切换到选择模式)
+                    {
+                        var type = CurrentSelectObject.GetComponent<MapObjectBase>();
+                        if ((type as MapObjectSpawnPoint == null) && (type as MapObjectWeaponSpawnPoint == null))
+                        {
+                            root.touchBehaviour = TouchBehaviour.Select;
+                            SelectObject(CurrentSelectObject);
+                        }                        
+                    }
+
                 }
                 else
                 {
@@ -370,51 +380,60 @@ namespace MapEditor
                                 boundingBox = obj.CalculateBounds();
                                 _position_delta = Vector3.zero;
                                 // create one will cancel selected 
-                                root._panel_up.ClearSelected();
-                                root._panel_left.ClearSelected();
+                                //root._panel_up.ClearSelected();
+                                //root._panel_left.ClearSelected();
 
                                 return;
                             }
                         }
+                    }
+                    else //没生成又没碰到组件
+                    {
+                        ClearSelectObject();
                     }
                 }
             }
             if (this.GetTouchUp())
             {
                 this.CurrentSelectWeapon = null;// if hit nothing  will cancel weapon spawn point select status
-                if (CurrentSelectObject != null)
-                {
-                    if (MapObjectRoot.ins.CheckConflict(CurrentSelectObject))
-                    {
-                        CurrentSelectObject.transform.position = pos_begin_touch;
-                    }
-                    CurrentSelectObject.GetComponent<MapObjectBase>().SetBright(false);
-                    MapObjectRoot.ins.CheckAllConflict();
-                }
+                //if (CurrentSelectObject != null)
+                //{
+                //    if (MapObjectRoot.ins.CheckConflict(CurrentSelectObject))
+                //    {
+                //        CurrentSelectObject.transform.position = pos_begin_touch;
+                //    }
+                //    CurrentSelectObject.GetComponent<MapObjectBase>().SetBright(false);
+                //    MapObjectRoot.ins.CheckAllConflict();
+                //}
                 CurrentSelectObject = null;
             }
 
+            //当前鼠标控制武器人物出生点移动
             if (CurrentSelectObject != null)
             {
-                var pos_pre = CurrentSelectObject.transform.position;
+                var type = CurrentSelectObject.GetComponent<MapObjectBase>();
+                if ((type as MapObjectSpawnPoint != null) || (type as MapObjectWeaponSpawnPoint != null))
+                {
+                    var pos_pre = CurrentSelectObject.transform.position;
 
-                var pos = Camera.main.ScreenToWorldPoint(this.GetTouchPosition()) + _position_delta;
-                pos.x = 0f;
-                CurrentSelectObject.transform.position = pos;
-                if (MapObjectRoot.ins.CheckConflict(CurrentSelectObject))
-                {
-                    MapObjectRoot.ins.SetBrightAll(true);
-                    CurrentSelectObject.GetComponent<MapObjectBase>().SetBright(true);
-                }
-                else
-                {
-                    MapObjectRoot.ins.SetBrightAll(false);
-                }
-                //move 
-                if (CurrentSelectObject.transform.hasChanged)
-                {
-                    //   MapObjectRoot.ins.CheckAllConflict();
-                    CurrentSelectObject.transform.hasChanged = false;
+                    var pos = Camera.main.ScreenToWorldPoint(this.GetTouchPosition()) + _position_delta;
+                    pos.x = 0f;
+                    CurrentSelectObject.transform.position = pos;
+                    if (MapObjectRoot.ins.CheckConflict(CurrentSelectObject))
+                    {
+                        MapObjectRoot.ins.SetBrightAll(true);
+                        CurrentSelectObject.GetComponent<MapObjectBase>().SetBright(true);
+                    }
+                    else
+                    {
+                        MapObjectRoot.ins.SetBrightAll(false);
+                    }
+                    //move 
+                    if (CurrentSelectObject.transform.hasChanged)
+                    {
+                        //   MapObjectRoot.ins.CheckAllConflict();
+                        CurrentSelectObject.transform.hasChanged = false;
+                    }
                 }
             }
 
@@ -504,7 +523,7 @@ namespace MapEditor
 #if UNITY_EDITOR
                 //编辑器模式，不需要取消删除按钮的点击
 #else
-                root._panel_up.OnBtnDeleteClick();
+                //root._panel_up.OnBtnDeleteClick();
 #endif
             }
             if (CurrentSelectObject != null)
@@ -525,8 +544,9 @@ namespace MapEditor
 
             }
             CurrentSelectObject = null;
+            ClearSelectObject();
 
-            //拖动连续生成
+            //拖动连续删除
             if (isTouchDown && !IsTouchUI._IsTouchUI)
             {
                 var ray = Camera.main.ScreenPointToRay(this.GetTouchPosition());
@@ -571,39 +591,55 @@ namespace MapEditor
                     var obj = hit.collider.gameObject.GetComponentFully<MapObjectBase>();
                     if (obj != null)
                     {
-                        CurrentSelectObject = obj.gameObject;
-                        var type = CurrentSelectObject.GetComponent<MapObjectBase>();
+                        var type = obj.gameObject.GetComponent<MapObjectBase>();
                         if ((type as MapObjectSpawnPoint == null) && (type as MapObjectWeaponSpawnPoint == null))
                         {
-                            UIPanelProperty.ins.Show();
-                            EditorSelection.activeObject = CurrentSelectObject;                            
-                            UIPanelOperation.ins.InitData(CurrentSelectObject.transform);
+                            SelectObject(obj.gameObject);
                         }
                         else
                         {
-                            CurrentSelectObject = null;
-                            UIPanelProperty.ins.Hide();
-                            EditorSelection.activeObject = null;
-                            UIPanelOperation.ins.Hide();
+                            ClearSelectObject();
                         }
                     }
                     else
                     {
-                        CurrentSelectObject = null;
-                        UIPanelProperty.ins.Hide();
-                        EditorSelection.activeObject = null;
-                        UIPanelOperation.ins.Hide();
+                        ClearSelectObject();
                     }
                 }
                 else
                 {
-                    CurrentSelectObject = null;
-                    UIPanelProperty.ins.Hide();
-                    EditorSelection.activeObject = null;
-                    UIPanelOperation.ins.Hide();
+                    ClearSelectObject();
                 }
             }
         }
+
+        /// <summary>
+        /// 选择
+        /// </summary>
+        /// <param name="obj"></param>
+        public void SelectObject(GameObject obj)
+        {
+            if (obj != null)
+            {
+                CurrentSelectObject = obj;
+                UIPanelProperty.ins.Show();
+                EditorSelection.activeObject = CurrentSelectObject;
+                UIPanelOperation.ins.InitData(CurrentSelectObject.transform);
+            }
+        }
+
+        /// <summary>
+        ///  取消选择
+        /// </summary>
+        public void ClearSelectObject()
+        {
+            CurrentSelectObject = null;
+            UIPanelProperty.ins.Hide();
+            EditorSelection.activeObject = null;
+            UIPanelOperation.ins.Hide();
+        }
+
+
 
         bool IsTouchPositionHasObject()
         {
@@ -626,17 +662,22 @@ namespace MapEditor
 
         void Update()
         {
-    #if (UNITY_ANDROID || UNITY_IOS || UNITY_IPHONE) && !UNITY_EDITOR
-
-    #else
+            isTouchDown = false;
+#if (UNITY_ANDROID || UNITY_IOS || UNITY_IPHONE) && !UNITY_EDITOR
+            if (Input.touchCount >0)
+            {
+                var touch = Input.GetTouch(0);
+                if (  touch.phase == TouchPhase.Began || touch.phase == TouchPhase.Moved)
+                {
+                    isTouchDown = true;
+                }
+            }
+#else
             if (Input.GetMouseButtonDown(0))
             {
                 isTouchDown = true;
             }
-            if (Input.GetMouseButtonUp(0))
-            {
-                isTouchDown = false;
-            }
+
     #endif
 
             if (root.touchBehaviour == TouchBehaviour.Added)

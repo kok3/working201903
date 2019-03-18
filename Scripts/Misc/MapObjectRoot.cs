@@ -565,9 +565,30 @@ namespace MapEditor
         {
             get
             {
-                return _list_map_object.Count + _list_map_object_decroate.Count + _list_spawn_points.Count + _list_weapon_spawn_points.Count;
+                return _list_map_object.Count + _list_map_object_decroate.Count + _list_spawn_points.Count + _list_weapon_spawn_points.Count - DisabledMapObjectCount;
             }
         }
+
+        public int DisabledMapObjectCount
+        {
+            get
+            {
+                int i = 0;
+                for (int ii = 0; ii < _list_map_object_decroate.Count; ii++)
+                {
+                    if (!_list_map_object_decroate[ii].gameObject.activeSelf)
+                        i++;
+                }
+                for (int ii = 0; ii < _list_map_object.Count; ii++)
+                {
+                    if (!_list_map_object[ii].gameObject.activeSelf)
+                        i++;
+                }
+
+                return i;
+            }
+        }
+
         public void SetPreviewColliderEnable(bool enable)
         {
             {//decorate
