@@ -116,6 +116,9 @@ namespace MapEditor
         public TouchBehaviour touchBehaviour = TouchBehaviour.Added;
         public GameObject[] obj_hide_when_preview;
 
+        public UIPanelLevelOne _panel_level_one = null;
+        public UIPanelLevelTwo _panel_level_two = null;
+
         public UIPanelUp _panel_up = null;
         public UIPanelLeft _panel_left = null;
         public UIPanelCommonOverlay _panel_common_overlay = null;
@@ -129,6 +132,8 @@ namespace MapEditor
         {
             ins = this;
             this._panel_left = this.GetComponentInChildren<UIPanelLeft>();
+            this._panel_level_one = this.GetComponentInChildren<UIPanelLevelOne>();
+            this._panel_level_two = this.GetComponentInChildren<UIPanelLevelTwo>();
             this._panel_up = this.GetComponentInChildren<UIPanelUp>();
             this._panel_common_overlay = this.GetComponentInChildren<UIPanelCommonOverlay>();
             this._panel_show_hide = this.GetComponentInChildren<UIPanelShowHide>();

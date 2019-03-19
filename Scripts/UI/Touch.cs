@@ -13,6 +13,7 @@ namespace MapEditor
         public LayerMask mask;
         UIRoot root;
         UIPanelUp _panel_up;
+        UIPanelLevelTwo _panel_level_two;
 
         private bool isTouchDown = false;
         private Bounds boundingBox;
@@ -23,6 +24,7 @@ namespace MapEditor
         {
             root = this.GetComponent<UIRoot>();
             _panel_up = this.GetComponentInChildren<UIPanelUp>();
+            _panel_level_two = this.GetComponentInChildren<UIPanelLevelTwo>();
         }
         void Start()
         {
@@ -130,7 +132,17 @@ namespace MapEditor
                         CurrentSelectObject.GetComponent<MapObjectBase>().SetBright(false);
                     }
                     // not hit some thind  -   if select  then added
+                    int currentSelectId = 0;
                     if (_panel_up.currentSelect != null)
+                    {
+                        currentSelectId = _panel_up.currentSelect.id;
+                    }
+                    else if(_panel_level_two.currentSelect != null)
+                    {
+                        currentSelectId = _panel_level_two.currentSelect.id;
+                    }
+
+                    if (currentSelectId > 0)
                     {
                         if (MapObjectRoot.ins.TotalMapObjectCount > MAX_NUM)
                         {
@@ -145,7 +157,7 @@ namespace MapEditor
                             {
                                 ///////////////////////////////////////////////
                                 //点击空地时创建
-                                var obj = MapObjectRoot.ins.CreateObject(_panel_up.currentSelect.id.ToString(), LayerMgr.ins.GetCurLayerTransform());
+                                var obj = MapObjectRoot.ins.CreateObject(currentSelectId.ToString(), LayerMgr.ins.GetCurLayerTransform());
                                 var pos = Camera.main.ScreenToWorldPoint(this.GetTouchPosition());
                                 pos.x = 0f;
                                 //      Debug.LogError(pos);
@@ -352,7 +364,17 @@ namespace MapEditor
                         CurrentSelectObject.GetComponent<MapObjectBase>().SetBright(false);
                     }
                     // not hit some thind  -   if select  then added
+                    int currentSelectId = 0;
                     if (_panel_up.currentSelect != null)
+                    {
+                        currentSelectId = _panel_up.currentSelect.id;
+                    }
+                    else if (_panel_level_two.currentSelect != null)
+                    {
+                        currentSelectId = _panel_level_two.currentSelect.id;
+                    }
+
+                    if (currentSelectId > 0)
                     {
 #if UNITY_EDITOR
                         if (MapObjectRoot.ins.TotalMapObjectCount > MAX_NUM)
@@ -371,7 +393,7 @@ namespace MapEditor
                         {
                             //   if (root.CurrentStep == MapEditorStep.MapObject)
                             {
-                                var obj = MapObjectRoot.ins.CreateObject(_panel_up.currentSelect.id.ToString());
+                                var obj = MapObjectRoot.ins.CreateObject(currentSelectId.ToString());
                                 var pos = Camera.main.ScreenToWorldPoint(this.GetTouchPosition());
                                 pos.x = 0f;
                                 //      Debug.LogError(pos);
@@ -666,8 +688,8 @@ namespace MapEditor
 
         void Update()
         {
-            isTouchDown = false;
 #if (UNITY_ANDROID || UNITY_IOS || UNITY_IPHONE) && !UNITY_EDITOR
+            isTouchDown = false;
             if (Input.touchCount >0)
             {
                 var touch = Input.GetTouch(0);
@@ -681,8 +703,12 @@ namespace MapEditor
             {
                 isTouchDown = true;
             }
+            if (Input.GetMouseButtonUp(0))
+            {
+                isTouchDown = false;
+            }
 
-    #endif
+#endif
 
             if (root.touchBehaviour == TouchBehaviour.Added)
             {
